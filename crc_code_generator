@@ -1,0 +1,85 @@
+#include <iostream>
+using namespace std;
+
+// Function to perform XOR operation
+string xorOperation(string dividend, string divisor) {
+    for (int i = 0; i < divisor.length(); i++)
+        dividend[i] = (dividend[i] == divisor[i]) ? '0' : '1';
+    return dividend;
+}
+
+// Function to perform CRC division and get remainder
+string computeCRC(string data, string generator) {
+    int d = generator.length();
+    string temp = data.substr(0, d);
+    
+    for (int i = d; i <= data.length(); i++) {
+        if (temp[0] == '1')
+            temp = xorOperation(temp, generator);
+        temp.erase(0, 1);
+        if (i < data.length()) 
+            temp += data[i];
+    }
+    return temp; // Remainder
+}
+
+// Function to transmit data with CRC
+void transmitData() {
+    string dataword, generator;
+    cout << "Enter Dataword (binary): ";
+    cin >> dataword;
+    cout << "Enter Generator Polynomial (binary): ";
+    cin >> generator;
+
+    // Append d-1 zeros
+    string paddedData = dataword + string(generator.length() - 1, '0');
+    
+    // Compute remainder
+    string remainder = computeCRC(paddedData, generator);
+    
+    // Final transmitted codeword
+    string codeword = dataword + remainder;
+
+    // Display results
+    cout << "Padded Data: " << paddedData << endl;
+    cout << "Remainder: " << remainder << endl;
+    cout << "Transmitting Codeword: " << codeword << endl;
+}
+
+// Function to check received data for errors
+void checkReceivedData() {
+    string received, generator;
+    cout << "Enter Received Codeword (binary): ";
+    cin >> received;
+    cout << "Enter Generator Polynomial (binary): ";
+    cin >> generator;
+
+    string remainder = computeCRC(received, generator);
+
+    // Check if remainder is all zeros
+    if (remainder.find('1') == string::npos)
+        cout << "No Error in Transmission." << endl;
+    else
+        cout << "Error Detected in Transmission!" << endl;
+}
+
+// Main menu-driven function
+int main() {
+    int choice;
+    do {
+        cout << "\n---- CRC Menu ----\n";
+        cout << "1. Enter Data to be Transmitted\n";
+        cout << "2. Check Received Data for Errors\n";
+        cout << "3. Exit\n";
+        cout << "Enter choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1: transmitData(); break;
+            case 2: checkReceivedData(); break;
+            case 3: cout << "Exiting...\n"; break;
+            default: cout << "Invalid choice! Try again.\n";
+        }
+    } while (choice != 3);
+    return 0;
+}
