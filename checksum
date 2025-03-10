@@ -1,0 +1,93 @@
+#include <iostream>
+#include <cstring>
+
+using namespace std;
+
+#define BLOCK_SIZE 4  // Fixed block size
+#define NUM_BLOCKS 2  // Fixed number of blocks
+
+// Function to compute checksum (1’s complement sum)
+void calculateChecksum(char data[NUM_BLOCKS][BLOCK_SIZE + 1], char checksum[]) {
+    int sum = 0;
+
+    // Convert binary blocks to integers and add them
+    sum += strtol(data[0], NULL, 2);
+    sum += strtol(data[1], NULL, 2);
+
+    // Handle carry (since block size is fixed at 4)
+    if (sum > 15) {
+        sum = (sum & 15) + (sum >> 4);
+    }
+
+    // 1’s complement
+    sum = ~sum & 15;
+
+    // Convert back to binary
+    for (int i = BLOCK_SIZE - 1; i >= 0; i--) {
+        checksum[i] = (sum % 2) + '0';
+        sum /= 2;
+    }
+    checksum[BLOCK_SIZE] = '\0';  // Null-terminate
+}
+
+// Function to transmit message
+void transmitData() {
+    char data[NUM_BLOCKS][BLOCK_SIZE + 1], checksum[BLOCK_SIZE + 1];
+
+    // Input two 4-bit blocks
+    cout << "Enter first 4-bit block: ";
+    cin >> data[0];
+    cout << "Enter second 4-bit block: ";
+    cin >> data[1];
+
+    // Calculate checksum
+    calculateChecksum(data, checksum);
+    cout << "Checksum: " << checksum << endl;
+
+    // Display transmitted message
+    cout << "Transmitting Message: " << data[0] << " " << data[1] << " " << checksum << endl;
+}
+
+// Function to check received message
+void checkReceivedData() {
+    char received[NUM_BLOCKS + 1][BLOCK_SIZE + 1], checksum[BLOCK_SIZE + 1];
+
+    // Input received blocks
+    cout << "Enter first received 4-bit block: ";
+    cin >> received[0];
+    cout << "Enter second received 4-bit block: ";
+    cin >> received[1];
+    cout << "Enter received checksum: ";
+    cin >> received[2];
+
+    // Calculate new checksum
+    calculateChecksum(received, checksum);
+
+    // Check for errors
+    cout << "\nVerification Result: ";
+    if (strcmp(checksum, "0000") == 0)
+        cout << "No Error in Transmission.\n";
+    else
+        cout << "Error Detected!\n";
+}
+
+// Main menu
+int main() {
+    int choice;
+    do {
+        cout << "\n---- Checksum Menu ----\n";
+        cout << "1. Enter Data to be Transmitted\n";
+        cout << "2. Check Received Data for Errors\n";
+        cout << "3. Exit\n";
+        cout << "Enter choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1: transmitData(); break;
+            case 2: checkReceivedData(); break;
+            case 3: cout << "Exiting...\n"; break;
+            default: cout << "Invalid choice! Try again.\n";
+        }
+    } while (choice != 3);
+    return 0;
+}
